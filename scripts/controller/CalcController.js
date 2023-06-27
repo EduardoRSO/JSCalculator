@@ -75,27 +75,30 @@ class CalcController {
     this._operation.push(eval(query));
   }
 
-  minQuery(query) {
-    let l = this._operation.length;
-    // eu quero encontrar a maior query possível que eu possa aplicar o eval, consequentemente reduzindo o length maximo do _operation para números pequenos. Tratando de números grandes se torna um problema, porque ainda não sei como mudar o tamanho da fonte e quebrar a linha. Isso seria legal.
-    if (l % 2 != 0) {
-      return eval(query).toFixed(2);
-    } else {
-      let mQuery = this._operation.slice(0, l - 1).join("").replace("%", "*0.01*");
-      return eval(mQuery).toFixed(2).toString() + this._operation[l - 1].toString();
-    }
+  isInteger(n) {
+    return n === +n && n === (n | 0);
   }
+
+  maxQuery(query) {
+    for (let l = this._operation.length; l % 2 != 0; l--) {
+      let mQuery = this._operation.slice(0, l).join("").replace("%", "*0.01*");
+      if (!isNaN(eval(mQuery))) {
+        if (this.isInteger(eval(mQuery)))
+          return eval(mQuery);
+        return eval(mQuery).toFixed(2);
+      }
+    }
+    return query;
+  }
+
 
   show() {
     let query = this._operation.join("").replace("%", "%*");
-    if (query.length >= 10) {
-      this.displayCalc = "Error";
-    } else if (this._operation.length < 3) {
-      this.displayCalc = query;
-    }
-    else {
-      this.displayCalc = this.minQuery(query);
-    }
+    // if (query.length >= 10) {
+    //   this.displayCalc = "Error";
+    // } else {
+    this.displayCalc = this.maxQuery(query);
+    // }
   }
 
   addOperation(value) {
