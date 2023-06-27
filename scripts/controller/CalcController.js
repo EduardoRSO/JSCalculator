@@ -16,6 +16,7 @@ class CalcController {
     setInterval(() => {
       this.setDisplayDateTime();
     }, 1000);
+    this.show();
   }
 
   addEventListenerAll(element, events, fn) {
@@ -80,12 +81,19 @@ class CalcController {
   }
 
   maxQuery(query) {
-    for (let l = this._operation.length; l % 2 != 0; l--) {
+    if (query == "") return 0;
+    for (let l = this._operation.length; l > 0; l--) {
       let mQuery = this._operation.slice(0, l).join("").replace("%", "*0.01*");
-      if (!isNaN(eval(mQuery))) {
+      if (this._operation[l - 1] == '%') {
+        mQuery = mQuery.slice(0, mQuery.length - 1);
+      }
+      try {
+        eval(mQuery);
         if (this.isInteger(eval(mQuery)))
           return eval(mQuery);
         return eval(mQuery).toFixed(2);
+      } catch {
+        continue;
       }
     }
     return query;
@@ -94,11 +102,7 @@ class CalcController {
 
   show() {
     let query = this._operation.join("").replace("%", "%*");
-    // if (query.length >= 10) {
-    //   this.displayCalc = "Error";
-    // } else {
     this.displayCalc = this.maxQuery(query);
-    // }
   }
 
   addOperation(value) {
