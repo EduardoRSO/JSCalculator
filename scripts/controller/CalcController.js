@@ -17,7 +17,24 @@ class CalcController {
       this.setDisplayDateTime();
     }, 1000);
     this.initKeyboard();
+    this.pasteFromClipboard();
     this.show();
+  }
+
+  pasteFromClipboard() {
+    document.addEventListener('paste', e => {
+      let text = e.clipboardData.getData('Text');
+      this.displayCalc = parseFloat(text);
+    })
+  }
+
+  copyToClipoard() {
+    let input = document.createElement('input');
+    input.value = this.displayCalc;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand("Copy");
+    input.remove();
   }
 
   initKeyboard() {
@@ -57,6 +74,9 @@ class CalcController {
         case "=":
         case "Enter":
           this.addEqual();
+          break;
+        case "c":
+          if (e.ctrlKey) this.copyToClipoard();
           break;
       }
     })
