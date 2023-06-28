@@ -16,7 +16,50 @@ class CalcController {
     setInterval(() => {
       this.setDisplayDateTime();
     }, 1000);
+    this.initKeyboard();
     this.show();
+  }
+
+  initKeyboard() {
+    document.addEventListener("keyup", e => {
+      switch (e.key) {
+        case "Escape":
+          this.clearAll();
+          break;
+        case "Backspace":
+          this.clearEntry();
+          break;
+        case "/":
+        case "*":
+        case "-":
+        case "+":
+          this.addOperator(e.key);
+          break;
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+        case "0":
+          this.addNumber(parseInt(e.key));
+          break;
+        case ".":
+        case ",":
+          this.addDot();
+          break;
+        case "%":
+          this.addPercent();
+          break;
+        case "=":
+        case "Enter":
+          this.addEqual();
+          break;
+      }
+    })
   }
 
   addEventListenerAll(element, events, fn) {
@@ -117,10 +160,12 @@ class CalcController {
     catch {
       //warning message maybe (?)
     }
+    this.show();
   }
 
   show() {
     let query = this._memory.join("");
+    if (query == "") query = 0;
     this.displayCalc = query;
   }
 
@@ -138,6 +183,7 @@ class CalcController {
 
   setError() {
     this.displayCalc = "Error";
+    this.show();
   }
 
   addPercent() {
@@ -146,6 +192,7 @@ class CalcController {
       if (!isNaN(lastInsertion))
         this._memory.push('%');
     }
+    this.show();
   }
 
   addDot() {
@@ -159,6 +206,7 @@ class CalcController {
       }
       this._memory.push('.');
     }
+    this.show();
   }
 
   addOperator(value) {
@@ -174,6 +222,7 @@ class CalcController {
         this._memory.push(value);
       }
     }
+    this.show();
   }
 
   addNumber(value) {
@@ -188,6 +237,7 @@ class CalcController {
     } else {
       this.setLastInsertion(this.concatNumbers(value));
     }
+    this.show();
   }
 
   addEqual() {
@@ -236,7 +286,6 @@ class CalcController {
         this.addNumber(parseInt(value));
         break;
     }
-    this.show();
-    console.log(this._memory);
+    //console.log(this._memory);
   }
 }
