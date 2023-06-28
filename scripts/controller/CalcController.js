@@ -1,7 +1,7 @@
 class CalcController {
 
   constructor() {
-    this._operation = [];
+    this._memory = [];
     this._locale = "pt-BR";
     this._displayCalcEL = document.querySelector("#display");
     this._dateEL = document.querySelector("#data");
@@ -23,183 +23,6 @@ class CalcController {
     events.split(' ').forEach(event => {
       element.addEventListener(event, fn, false);
     });
-  }
-
-  getLastOperation() {
-    return this._operation[this._operation.length - 1];
-  }
-
-  setLastOperation(value) {
-    this._operation[this._operation.length - 1] = value;
-  }
-
-  clearAll() {
-    this._operation = [];
-    this.show();
-  }
-
-  clearEntry() {
-    this._operation.pop();
-    this.show();
-  }
-
-  isOperator(value) {
-    return (['+', '-', '*', '/', '%'].indexOf(value) > -1);
-  }
-
-  lastOperator() {
-    for (let i = this._operation.length; i > 0; i--)
-      if (this.isOperator(this._operation[i]))
-        return this._operation[i];
-    return "";
-  }
-
-  hasEnoughLength() {
-    return this._operation.length >= 1;
-  }
-
-  goodSyntax(value) {
-    let l = this._operation.length;
-    if (value == '.') {
-      if (l >= 3 && !this.isOperator(this.lastOperator())) return false;
-    }
-    if (value == '=') {
-      if (l < 3 || !this.isOperator(this.lastOperator())) return false;
-    }
-    return true;
-  }
-
-  cutQuery() {
-    let query = this._operation.join("").replace("%", "*0.01*");
-    if (this._operation.length > 1 && this._operation.length % 2 != 0)
-      this._operation = [];
-    this._operation.push(eval(query));
-  }
-
-  isInteger(n) {
-    return n === +n && n === (n | 0);
-  }
-
-  maxQuery(query) {
-    if (query == "") return 0;
-    for (let l = this._operation.length; l > 0; l--) {
-      let mQuery = this._operation.slice(0, l).join("").replace("%", "*0.01*");
-      if (this._operation[l - 1] == '%') {
-        mQuery = mQuery.slice(0, mQuery.length - 1);
-      }
-      try {
-        eval(mQuery);
-        if (this.isInteger(eval(mQuery)))
-          return eval(mQuery);
-        return eval(mQuery).toFixed(2);
-      } catch {
-        continue;
-      }
-    }
-    return query;
-  }
-
-
-  show() {
-    let query = this._operation.join("").replace("%", "%*");
-    this.displayCalc = this.maxQuery(query);
-  }
-
-  addOperation(value) {
-    if (isNaN(value)) {
-      if (this.hasEnoughLength()) {
-        if (this.isOperator(value)) {
-          if (this.isOperator(this.getLastOperation())) {
-            this.setLastOperation(value);
-          } else {
-            this._operation.push(value);
-          }
-        } else if (!isNaN(this.getLastOperation()) && this.goodSyntax(value)) {
-          if (value == '=') {
-            this.cutQuery();
-          }
-          else {
-            this._operation.push(value);
-          }
-        }
-      }
-    } else {
-      if (this.hasEnoughLength()) {
-        if (isNaN(this.getLastOperation())) {
-          this._operation.push(value);
-        }
-        else {
-          let concatNumber = this.getLastOperation().toString() + value.toString();
-          this.setLastOperation(parseInt(concatNumber));
-        }
-      } else {
-        this._operation.push(value);
-      }
-    }
-    console.log(this._operation);
-    this.show();
-  }
-
-  setError() {
-    this.displayCalc = "Error";
-  }
-
-  execBtn(value) {
-    switch (value) {
-
-      case 'ac':
-        this.clearAll();
-        break;
-      case 'ce':
-        this.clearEntry();
-        break;
-
-      case 'porcento':
-        this.addOperation('%');
-        break;
-
-      case 'divisao':
-        this.addOperation('/');
-        break;
-
-      case 'multiplicacao':
-        this.addOperation('*');
-        break;
-
-      case 'subtracao':
-        this.addOperation('-');
-        break;
-
-      case 'soma':
-        this.addOperation('+');
-        break;
-
-      case 'igual':
-        this.addOperation('=');
-        break;
-
-      case 'ponto':
-        this.addOperation('.');
-        break;
-
-      case '0':
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6':
-      case '7':
-      case '8':
-      case '9':
-        this.addOperation(parseInt(value));
-        break;
-
-      default:
-        this.setError();
-        break;
-    }
-
   }
 
   initButtonsEvents() {
@@ -250,5 +73,170 @@ class CalcController {
   }
   set currentDate(value) {
     this._currentDate = value;
+  }
+
+  getLastInsertion() {
+    return this._memory[this._memory.length - 1];
+  }
+
+  setLastInsertion(value) {
+    this._memory[this._memory.length - 1] = value;
+  }
+
+  clearAll() {
+    this._memory = [];
+    this.show();
+  }
+
+  clearEntry() {
+    this._memory.pop();
+    this.show();
+  }
+
+  isOperator(value) {
+    return (['+', '-', '*', '/'].indexOf(value) > -1);
+  }
+
+  isInteger(n) {
+    return n === +n && n === (n | 0);
+  }
+
+  getResult() {
+    let query = this._memory.join("").replace("%", "*0.01");
+    if (query == "") return 0;
+    try {
+      let result = eval(query);
+      if (this.isInteger(result)) {
+        this.clearAll();
+        this._memory.push(result);
+      } else {
+        this.clearAll();
+        this._memory.push(result.toFixed(2));
+      }
+    }
+    catch {
+      //warning message maybe (?)
+    }
+  }
+
+  show() {
+    let query = this._memory.join("");
+    this.displayCalc = query;
+  }
+
+  getLastStringInsertion() {
+    for (let l = this._memory.length; l > 0; l--)
+      if (isNaN(this._memory[l - 1])) return this._memory[l - 1];
+    return "";
+  }
+
+  concatNumbers(value) {
+    let a = this.getLastInsertion().toString();
+    let b = value.toString();
+    return parseInt(a + b);
+  }
+
+  setError() {
+    this.displayCalc = "Error";
+  }
+
+  addPercent() {
+    if (this._memory.length > 0) {
+      let lastInsertion = this.getLastInsertion();
+      if (!isNaN(lastInsertion))
+        this._memory.push('%');
+    }
+  }
+
+  addDot() {
+    if (this.getLastStringInsertion() != '.') {
+      let lastInsertion = this.getLastInsertion();
+      if (isNaN(lastInsertion)) {
+        if (lastInsertion == '%') {
+          this._memory.push('*');
+        }
+        this._memory.push(0);
+      }
+      this._memory.push('.');
+    }
+  }
+
+  addOperator(value) {
+    if (this._memory.length >= 1) {
+      let lastInsertion = this.getLastInsertion();
+      if (isNaN(lastInsertion)) {
+        if (lastInsertion == '%') {
+          this._memory.push(value);
+        } else {
+          this.setLastInsertion(value);
+        }
+      } else {
+        this._memory.push(value);
+      }
+    }
+  }
+
+  addNumber(value) {
+    let lastInsertion = this.getLastInsertion();
+    if (this._memory.length == 0 || lastInsertion == '.') {
+      this._memory.push(value);
+    } else if (this.isOperator(lastInsertion)) {
+      this._memory.push(value);
+    } else if (lastInsertion == '%') {
+      this._memory.push('*');
+      this._memory.push(value);
+    } else {
+      this.setLastInsertion(this.concatNumbers(value));
+    }
+  }
+
+  addEqual() {
+    this.getResult();
+  }
+
+  execBtn(value) {
+    switch (value) {
+      case 'ac':
+        this.clearAll();
+        break;
+      case 'ce':
+        this.clearEntry();
+        break;
+      case 'porcento':
+        this.addPercent();
+        break;
+      case 'divisao':
+        this.addOperator('/');
+        break;
+      case 'multiplicacao':
+        this.addOperator('*');
+        break;
+      case 'subtracao':
+        this.addOperator('-');
+        break;
+      case 'soma':
+        this.addOperator('+');
+        break;
+      case 'igual':
+        this.addEqual();
+        break;
+      case 'ponto':
+        this.addDot();
+        break;
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        this.addNumber(parseInt(value));
+        break;
+    }
+    this.show();
+    console.log(this._memory);
   }
 }
