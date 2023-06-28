@@ -1,6 +1,8 @@
 class CalcController {
 
   constructor() {
+    this._audio = new Audio("click.mp3");
+    this._audioOff = false;
     this._memory = [];
     this._locale = "pt-BR";
     this._displayCalcEL = document.querySelector("#display");
@@ -18,7 +20,23 @@ class CalcController {
     }, 1000);
     this.initKeyboard();
     this.pasteFromClipboard();
+    document.querySelectorAll('.btn-ac').forEach(btn => {
+      btn.addEventListener('dblclick', e => {
+        this.toggleAudio();
+      })
+    })
     this.show();
+  }
+
+  toggleAudio() {
+    this._audioOff = !this._audioOff;
+  }
+
+  playAudio() {
+    if (this._audioOff) {
+      this._audio.currentTime = 0;
+      this._audio.play();
+    }
   }
 
   pasteFromClipboard() {
@@ -39,6 +57,7 @@ class CalcController {
 
   initKeyboard() {
     document.addEventListener("keyup", e => {
+      this.playAudio();
       switch (e.key) {
         case "Escape":
           this.clearAll();
@@ -186,6 +205,7 @@ class CalcController {
   show() {
     let query = this._memory.join("");
     if (query == "") query = 0;
+    else if (query.length >= 10) query = "Error";
     this.displayCalc = query;
   }
 
@@ -199,11 +219,6 @@ class CalcController {
     let a = this.getLastInsertion().toString();
     let b = value.toString();
     return parseInt(a + b);
-  }
-
-  setError() {
-    this.displayCalc = "Error";
-    this.show();
   }
 
   addPercent() {
@@ -265,6 +280,7 @@ class CalcController {
   }
 
   execBtn(value) {
+    this.playAudio();
     switch (value) {
       case 'ac':
         this.clearAll();
